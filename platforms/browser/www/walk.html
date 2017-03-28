@@ -1,0 +1,643 @@
+  
+<!doctype html> 
+<html lang="en"> 
+<head> 
+    <meta charset="UTF-8" />
+    <title>Phaser - Making your first game, part 2</title>
+    <script type="text/javascript" src="js/phaser.min.js"></script>
+    <style type="text/css">
+        body {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+
+<script type="text/javascript">
+var w = 800, h = 600;
+var game = new Phaser.Game(w, h, Phaser.CANVAS, '', { preload: preload, create: create, update: update });
+
+var player,keyboard;
+var rock, key, money,arrow,hardrock,bomb,wolf,Lives,Score,missile, hardRocks, moneys, money ,key, keys,platform,platforms,arrow,arrows,bomb,bombs,spike,gameOverText,bestScoreText,spike1,spike2,spike3,spike4,spike5,explode,button,button1,button2,playbutton,pausebutton;//,resumebutton;
+function preload() {
+    game.load.image("key","img/key.png");
+    game.load.image("money","img/money.png");
+    game.load.image("arrow","img/arrow1.png");
+    game.load.image("bomb","img/bomb.png");
+    game.load.image("bg","img/bg.png");
+    game.load.image("platform","img/statusbar.png");
+    game.load.image("platforms","img/spike2.png");
+    game.load.image("spike","img/spike2.png");
+    game.load.image("spike1","img/spike2.png");
+    game.load.image("spike2","img/spike2.png");
+    game.load.image("spike3","img/spike2.png");
+    game.load.image("spike4","img/spike2.png");
+    game.load.image("spike5","img/spike2.png");
+    //game.load.image("PLATFORM","img/platform.png");
+    game.load.image("rock","img/rock.png");
+    game.load.image("bg-images","img/henz.png");
+    game.load.spritesheet("wolf","img/wolf1.png",48,43);
+    game.load.spritesheet("man","img/runner1.png",276.6,383.5);
+    game.load.spritesheet("missile","img/missile1.png",137.3,68);
+    game.load.spritesheet("explode","img/die.png",124,130);
+    game.load.spritesheet("button","img/pointright.png",100,100);
+    game.load.spritesheet("button1","img/pointleft.png",100,100);
+    game.load.spritesheet("button2","img/pointjump.png",100,100);
+    game.load.spritesheet("playbutton","img/PLAYPAUSE.png",100,100);
+    //game.load.spritesheet("pausebutton","img/pause1.png",97,102);
+    // game.load.spritesheet("resumebutton","img/resume.png",97,102);
+}
+
+function create() {
+    game.physics.startSystem(Phaser.Physics.ARCADE);
+    game.add.sprite(0,0,"bg-images");
+    platform = game.add.sprite(0,400,"platform");
+    platform.scale.x =500;
+    platforms= game.add.sprite(500,365,"platforms");
+    platforms.scale.x = 1.2;
+    platforms.scale.y = 5;
+    spike= game.add.sprite(850,365,"spike");
+    spike.scale.x = 1.2;
+    spike.scale.y = 5;
+    spike1= game.add.sprite(1500,365,"spike1");
+    spike1.scale.x = 1.2;
+    spike1.scale.y = 5;
+    spike2= game.add.sprite(2400,365,"spike1");
+    spike2.scale.x = 1.2;
+    spike2.scale.y = 5;
+    spike3= game.add.sprite(3600,365,"spike1");
+    spike3.scale.x = 1.2;
+    spike3.scale.y = 5;
+    spike4= game.add.sprite(4800,365,"spike1");
+    spike4.scale.x = 1.2;
+    spike4.scale.y = 5;
+    spike5= game.add.sprite(5600,365,"spike1");
+    spike5.scale.x = 1.2;
+    spike5.scale.y = 5;
+   
+    button = game.add.button(100,460,"button",walkright);
+    button.scale.x = .9;
+    button.scale.y= .9;
+    button1 = game.add.button(20,460,"button1",walkleft);
+    button1.scale.x = .9;
+    button1.scale.y= .9;
+    button2 = game.add.button(600,460,"button2",jump);
+    button2.scale.x = .9;
+    button2.scale.y= .9;
+    playbutton = game.add.button(330,480,"playbutton",play);
+    playbutton.scale.x = 1.5;
+    playbutton.scale.y= 1.0;
+    //pausebutton = game.add.button(330,500,"pausebutton",pause);
+    //pausebutton.scale.x = 1.5;
+    //pausebutton.scale.y= .5;
+    // resumebutton = game.add.button(330,550,"resumebutton",resume);
+    // resumebutton.scale.x = 1.5;
+    // resumebutton.scale.y= .5;
+
+
+
+    //PLATFORM= game.add.sprite(300,200,"PLATFORM");
+    //PLATFORM.scale.x = 5;
+    // diamond = game.add.sprite(400,300,"diamond");
+    player = game.add.sprite(0,0,"man");
+      game.world.setBounds(0,0,8000,0);
+    
+    player.animations.add('jump');
+    player.animations.add('walk-right',[1,2,3,4,1,2,3,4,1,2,3,4],0,true);
+    player.animations.add('walk-left',[6,7,8,9,6,7,8,9,6,7,8,9],0,true);
+    wolf = game.add.sprite(800,365,"wolf");
+    //wolf.animations.add('walk-right',[5,6,7,8],4,true);
+    wolf.animations.add('walk-left',[0,1,2,3,4],4,true);
+    missile = game.add.sprite(1000,350,"missile");
+    //wolf.animations.add('walk-right',[5,6,7,8],4,true);
+    missile.animations.add('walk-left',[0,1,2,3,4],4,true);
+
+    keyboard = game.input.keyboard.createCursorKeys();
+
+    game.physics.arcade.enable(player);
+    game.physics.arcade.enable(wolf);
+    game.physics.arcade.enable(missile);
+    game.physics.arcade.enable(platform);
+    game.physics.arcade.enable(platforms);
+    game.physics.arcade.enable(spike);
+    game.physics.arcade.enable(spike1);
+    game.physics.arcade.enable(spike2);
+    game.physics.arcade.enable(spike3);
+    game.physics.arcade.enable(spike4);
+    game.physics.arcade.enable(spike5);
+    wolf.body.collideWorldBounds =false;
+    missile.body.collideWorldBounds =false;
+    missile.body.bounce.y = .5;
+    missile.scale.x=.5;
+    missile.scale.y=.5;
+
+    //game.physics.arcade.enable(PLATFORM);
+    player.body.movable = true;
+    wolf.body.immovable = true;
+    missile.body.immovable = true;
+    platform.body.immovable = true;
+    platforms.body.immovable = true;
+    spike.body.immovable = true;
+    spike1.body.immovable = true;
+    spike2.body.immovable = true;
+    spike3.body.immovable = true;
+    spike4.body.immovable = true;
+    spike5.body.immovable = true;
+    //PLATFORM.body.immovable = true;
+    hardrock= game.add.group();
+    hardrock.enableBody = true;
+
+    key = game.add.group();
+    key.enableBody = true;
+
+    money = game.add.group();
+    money.enableBody = true;
+
+    arrow = game.add.group();
+    arrow.enableBody = true;
+
+    bomb = game.add.group();
+    bomb.enableBody = true;
+
+    
+
+    createRocks(1500);
+    createKeys(800);
+    createMoneys(1200);
+    createArrows(5000);
+    createBombs(2000);
+   
+
+    player.body.collideWorldBounds = true;
+    player.body.gravity.y = 3000;
+    //player.body.bounce.y = 0.8;
+    player.scale.y = .2;
+    player.scale.x = .2;
+
+    Score = game.add.text(400,25,'Score:',{fill:"black",font:" 28px Algerian"});
+    Lives= game.add.text(0,50,'Lives:6 ',{fill:"black",font:"30px Algerian"});
+    bestScoreText = game.add.text(400,50,'Best: '+getScore(),{fill:"blue",font:"italic bold 30px Calibri Body "});
+    gameOverText = game.add.text(250,225,'',{fill:"red",font:"Bold 80px Calibri Body Center"});
+    
+    game.camera.follow(player,Phaser.Camera.FOLLOW_TOPDOWN);
+    gameOverText.fixedToCamera=true;
+    Lives.fixedToCamera = true;
+    Score.fixedToCamera = true;
+    bestScoreText.fixedToCamera=true; 
+    button.fixedToCamera=true; 
+    button1.fixedToCamera=true;
+    button2.fixedToCamera=true;
+    playbutton.fixedToCamera=true;
+    //pausebutton.fixedToCamera=true;
+    //resumebutton.fixedToCamera=true;
+}
+
+// var x = 0;
+function update() {
+    
+    game.physics.arcade.collide(player,platform);
+    //game.physics.arcade.collide(player,platforms);
+    game.physics.arcade.collide(wolf,platform);
+    game.physics.arcade.collide(missile,platform);
+    game.physics.arcade.overlap(player,hardrock,collectRocks);
+    game.physics.arcade.overlap(player,key,collectKeys);
+    game.physics.arcade.overlap(player,money,collectmoneys);
+    game.physics.arcade.overlap(player,wolf,killwolf);
+    game.physics.arcade.overlap(player,missile,killmissile);
+    game.physics.arcade.overlap(player,arrow,collectarrows);
+    game.physics.arcade.overlap(player,platforms,spikeplatforms);
+    game.physics.arcade.overlap(player,bomb,avoidbombs);
+    game.physics.arcade.overlap(player,spike,spikes);
+    game.physics.arcade.overlap(player,spike1,spikes1);
+    game.physics.arcade.overlap(player,spike2,spikes2);
+    game.physics.arcade.overlap(player,spike3,spikes3);
+    game.physics.arcade.overlap(player,spike4,spikes4);
+    game.physics.arcade.overlap(player,spike5,spikes5);
+    game.physics.arcade.overlap(platform,bomb,explodebomb);
+    game.physics.arcade.overlap(missile,bomb,explodebomb);
+
+
+   
+
+     wolf.animations.play("walk-left");
+     wolf.body.velocity.x = -80;
+     missile.animations.play("walk-left");
+     missile.body.velocity.x = -100;
+
+    // if(keyboard.left.isDown){
+    //      //x++;
+    //     player.animations.play("walk-left");
+    //     player.body.velocity.x = -50;
+    //     //bg.frame = 1;
+    // }
+    // else if(keyboard.right.isDown){
+    //     // x--;
+    //     // bg.frame = 1;
+    //     player.animations.play("walk-right");
+    //     player.body.velocity.x = 100;
+    // }
+    
+    // else{
+    //     player.body.velocity.x = 0;
+    //     player.animations.stop();
+    // }
+    // if(keyboard.up.isDown/* && player.body.touching.down*/){
+    //     player.body.velocity.y = -200;
+    //     //player.body.velocity.x  = 200;
+    // // && player.body.touching.down
+    // //if(keyboard.up.isDown){
+    //     //player.animations.play('jump');
+    //     //player.body.velocity.y = -250;
+    //     //Player.body.velocity.x = 150;
+    // }
+}
+
+var a = 0 ;
+var b= 6;
+function spikes5(player,spike5){
+    //a = a +20; 
+    b = b - 6;
+    //wolf.kill();
+    player.kill();
+    if(getScore()<=a){
+        saveScore(a);
+        bestScoreText.text = "Best: "+a;
+    }
+    Lives.text = "Lives: " +b;
+    gameOverText.text = "DEFEAT";
+    game._paused = true;
+    //life.text = "Score: " +a;
+}
+function spikes4(player,spike4){
+    //a = a +20; 
+    b = b - 6;
+    //wolf.kill();
+    player.kill();
+    if(getScore()<=a){
+        saveScore(a);
+        bestScoreText.text = "Best: "+a;
+    }
+    Lives.text = "Lives: " +b;
+    gameOverText.text = "DEFEAT";
+    game._paused = true;
+    //life.text = "Score: " +a;
+}
+function spikes3(player,spike3){
+    //a = a +20; 
+    b = b - 6;
+    //wolf.kill();
+    player.kill();
+    if(getScore()<=a){
+        saveScore(a);
+        bestScoreText.text = "Best: "+a;
+    }
+    Lives.text = "Lives: " +b;
+    gameOverText.text = "DEFEAT";
+    game._paused = true;
+    //life.text = "Score: " +a;
+}
+function spikes2(player,spike2){
+    //a = a +20; 
+    b = b - 6;
+    //wolf.kill();
+    player.kill();
+    if(getScore()<=a){
+        saveScore(a);
+        bestScoreText.text = "Best: "+a;
+    }
+    Lives.text = "Lives: " +b;
+    gameOverText.text = "DEFEAT";
+    game._paused = true;
+    //life.text = "Score: " +a;
+}
+function spikes1(player,spike1){
+    //a = a +20; 
+    b = b - 6;
+    //wolf.kill();
+    player.kill();
+    if(getScore()<=a){
+        saveScore(a);
+        bestScoreText.text = "Best: "+a;
+    }
+    Lives.text = "Lives: " +b;
+    gameOverText.text = "DEFEAT";
+    game._paused = true;}
+    //life.text = "Score: " +a;
+function spikes(player,spike){
+    //a = a +20; 
+    b = b - 6;
+    //wolf.kill();
+    player.kill();
+    if(getScore()<=a){
+        saveScore(a);
+        bestScoreText.text = "Best: "+a;
+    }
+    Lives.text = "Lives: " +b;
+    gameOverText.text = "DEFEAT";
+    game._paused = true;
+    //life.text = "Score: " +a;
+}
+function killmissile(player,missile){
+    //a = a +20; 
+    b = b - 6;
+    //wolf.kill();
+   player.kill();
+    missile.kill();
+     explode =game.add.sprite((missile.position.x-62),(missile.position.y-65),"explode");
+    explode.animations.add('explosion',[0,1,2,3,4,5,6,7,8,9,10,11,12],0,false);
+    explode.animations.play('explosion');
+    setTimeout(function(){
+        explode.animations.stop();
+        explode.scale.x = 0;
+        explode.scale.y = 0;
+        explode.kill();
+},200)
+    if(getScore()<=a){
+        saveScore(a);
+        bestScoreText.text = "Best: "+a;
+    }
+    gameOverText.text = "DEFEAT";
+    game._paused= true;
+    Score.text = "Score: " +a;
+    Lives.text = "Lives: " +b;
+}
+
+function spikeplatforms(player,platforms){
+    //a = a +20; 
+    b = b - 6;
+    //wolf.kill();
+    player.kill();
+    if(getScore()<=a){
+        saveScore(a);
+        bestScoreText.text = "Best: "+a;
+    }
+    gameOverText.text = "DEFEAT";
+    game._paused = true;
+    Lives.text = "Lives: " +b;
+   
+    //life.text = "Score: " +a;
+
+}
+function killwolf(player,wolf){
+    a = a +50; 
+    //b = b - 3;
+    //wolf.kill();
+    wolf.kill();
+    if(getScore()<=a){
+        saveScore(a);
+        bestScoreText.text = "Best: "+a;
+    }
+    Score.text = "Score: " +a;
+
+}
+function collectRocks(player,hardrock){
+    a = a -3; 
+    b = b - 1;
+    //wolf.kill();
+    hardrock.kill();
+    player.kill();
+    if(getScore()<=a){
+        saveScore(a);
+        bestScoreText.text = "Best: "+a;
+    }
+    Score.text = "Score: " +a;
+    Lives.text = "Lives: " +b;
+    game._respawn=true
+
+}
+
+function collectKeys(player,key){
+    a = a + 6;
+    //b = b + 1;
+    key.kill();
+    if(getScore()<=a){
+        saveScore(a);
+        bestScoreText.text = "Best: "+a;
+    }
+
+    Score.text = "Score: "+a;
+    Lives.text ="Lives: " +b;
+}
+function collectmoneys(player,money){
+    a = a + 9;
+    //b = b + 1;
+    money.kill();
+    if(getScore()<=a){
+        saveScore(a);
+        bestScoreText.text = "Best: "+a;
+    }Score.text = "Score: "+a;
+    //score.text ="Life: " +b;
+}
+
+function collectarrows(player,arrow){
+    a = a - 2  ;
+    b = b - 1;
+    arrow.kill();
+    player.kill();
+    if(getScore()<=a){
+        saveScore(a);
+        bestScoreText.text = "Best: "+a;
+    }
+    Lives.text = "Start Again";
+    //game._paused = true;
+    game._resume=true;
+    Score.text = "Score: "+a;
+    Lives.text ="Lives: " +b;
+}
+function avoidbombs(player,bomb){
+a = a + 9;
+  b = b - 6;
+    player.kill();
+    bomb.kill();
+    explode =game.add.sprite((bomb.position.x-65),(bomb.position.y-62),"explode");
+    explode.animations.add('explosion',[0,1,2,3,4,5,6,7,8,9,10,11,12],0,false);
+    explode.animations.play('explosion');
+    setTimeout(function(){
+        explode.animations.stop();
+        explode.scale.x = 0;
+        explode.scale.y = 0;
+        explode.kill();
+},200)
+    if(getScore()<=a){
+        saveScore(a);
+        bestScoreText.text = "Best: "+a;
+    }
+     gameOverText.text = "DEFEAT";
+    game._paused = true;
+    Score.text = "Score: "+a;
+    Lives.text ="Lives: " +b;
+}
+function createBombs (time){
+    setInterval(function(){
+        var size = Math.random();
+        var bombs = bomb.create(Math.random()*w,100,'bomb');
+        bombs.body.gravity.y = 10;
+        // shineDiamonds.body.collideWorldBounds = true;
+        bombs.body.bounce.y = 0.6;
+
+        bombs.scale.x = 0.3;
+        bombs.scale.y = 0.3;
+    },time)
+}
+function createArrows(time){
+    setInterval(function(){
+        var size = Math.random();
+        var arrows = arrow.create(Math.random()*w,100,'arrow');
+        arrows.body.gravity.y = 40;
+        // shineDiamonds.body.collideWorldBounds = true;
+        arrows.body.bounce.y = 0.6;
+
+        arrows.scale.x = 0.30;
+        arrows.scale.y = 0.30;
+    },time)
+}
+function createmissile(time){
+    setInterval(function(){
+        var size = Math.random();
+        var missile = missile.create(Math.random()*w,100,'missile');
+        missile.body.gravity.y = 1000;
+        // shineDiamonds.body.collideWorldBounds = true;
+        //missile.body.bounce.y = 0;
+
+        //missile.scale.x = 0.5;
+        //missile.scale.y = 0.5;
+    },time)
+}
+function createwolf(time){
+    setInterval(function(){
+        var size = Math.random();
+        var wolf = wolf.create(Math.random()*w,100,'wolf');
+        //wolf.body.gravity.y = 500;
+        // shineDiamonds.body.collideWorldBounds = true;
+        //wolf.body.bounce.y = 10;
+
+        wolf.scale.x = 3;
+        wolf.scale.y = 3;
+    },time)
+}
+function createRocks(time){
+    setInterval(function(){
+        var size = Math.random();
+        var hardRocks = hardrock.create(Math.random()*w,100,'rock');
+        hardRocks.body.gravity.y = 40;
+        // shineDiamonds.body.collideWorldBounds = true;
+        hardRocks.body.bounce.y = 0.6;
+
+        hardRocks.scale.x =.1;
+        hardRocks.scale.y =.1;
+    },time)
+}
+
+function createKeys(time){
+    setInterval(function(){
+        var size = Math.random();
+        var keys = key.create(Math.random()*w,-100,'key');
+        keys.body.gravity.y = 80;
+        // shineDiamonds.body.collideWorldBounds = true;
+        keys.body.bounce.y = 0.6;
+
+        keys.scale.x = 0.7;
+        keys.scale.y = 0.7;
+    },time)
+}
+function createMoneys(time){
+    setInterval(function(){
+        var size = Math.random();
+        var moneys = money.create(Math.random()*w,-150,'money');
+        moneys.body.gravity.y = 100;
+        // shineDiamonds.body.collideWorldBounds = true;
+        moneys.body.bounce.y = 0.6;
+
+        moneys.scale.x = 0.7;
+        moneys.scale.y = 0.7;
+    },time)
+}
+function saveScore(Score) {
+    localStorage.setItem("gameScore",Score);
+}
+
+function getScore(){
+    return (localStorage.getItem("gameScore") == null || localStorage.getItem("gameScore") == "")?0:localStorage.getItem("gameScore");
+}
+function explodebomb(platform,bomb){
+    bomb.kill();
+   //player.kill();
+    explode =game.add.sprite((bomb.position.x-65),(bomb.position.y-62),"explode");
+    explode.animations.add('explosion',[0,1,2,3,4,5,6,7,8,9,10,11,12],0,false);
+    explode.animations.play('explosion');
+    setTimeout(function(){
+        explode.animations.stop();
+        explode.scale.x = 0;
+        explode.scale.y = 0;
+        explode.kill();
+},200)
+}
+function walkright(){
+button.frame =1;
+if(player.body.touching.down){
+player.animations.play("walk-right");
+player.body.velocity.x = 200;
+
+}
+setTimeout(function(){
+button.frame=0;
+},200)
+}
+function walkleft(){
+button1.frame =1;
+if(player.body.touching.down){
+player.animations.play("walk-left");
+player.body.velocity.x = -300;
+
+}
+setTimeout(function(){
+button1.frame=0;
+},300)
+}
+function jump(){
+button2.frame =1;
+if(player.body.touching.down){
+player.body.velocity.y=-900;
+}
+setTimeout(function(){
+button2.frame=0;
+},450)
+}
+function play(){
+  {playbutton.frame=1}  
+setTimeout(function(){
+    
+playbutton.frame=0;
+game._paused=false;
+},5000);
+game._paused=true;
+}
+// function pause(){
+//   {pausebutton.frame=1}  
+// setTimeout(function(){
+    
+// pausebutton.frame=0;
+// game._paused=false;
+// },5000);
+// game._paused=true;
+// }
+// function resume(){
+// resumebutton.frame =1;
+// //player.animations.play("player-resume");
+// //if(player.body.touching.down)
+//     game._paused=true;
+//     game._play=true;
+//     console.log;
+// {
+// //player.body.velocity.y=-1000;
+// }
+// setTimeout(function(){
+// resumebutton.frame=0;
+// },300)
+// game._paused=false
+// }
+
+</script>
+
+</body>
+</html>

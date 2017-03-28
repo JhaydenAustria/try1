@@ -1,0 +1,446 @@
+<!doctype html> 
+<html lang="en"> 
+<head> 
+    <meta charset="UTF-8" />
+    <title>Phaser - Making your first game, part 2</title>
+    <script type="text/javascript" src="js/phaser.min.js"></script>
+    <style type="text/css">
+        body {
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+
+<script type="text/javascript">
+var w = 380, h = 780;
+var game = new Phaser.Game(w, h, Phaser.CANVAS, '', { preload: preload, create: create, update: update });
+
+var player, keyboard;
+var fish, fishes, bombs, bomb, sea, star, stars, boat, platform, fish1; //fish1, fish2; 
+var life, gameOverText, bestScoreText2, bestScoreText, tryText, btnLeft, btnRight, playbutton, splash, explode;//pausedButt,explosion;
+function preload() {
+    game.load.image("platform","img/jj/plat.png");
+    game.load.image("bground","img/780.png");
+    game.load.image("bomb","img/jj/bomb1.png");
+    game.load.image("fish","img/jj/fish.png");
+    game.load.image("star","img/jj/star1.png");
+    game.load.image("btnLeft","img/jj/transparent.png");
+    game.load.image("btnRight","img/jj/this.png");
+    
+    game.load.spritesheet("fish1","img/40.png",52,50);
+    game.load.spritesheet("bird","img/bird1.png",55,49);
+    game.load.spritesheet("explode","img/ex.png",70,70);
+    game.load.spritesheet("splash","img/splash.png",64,64);
+    game.load.spritesheet("boat","img/jj/boata12.png",78,72);
+   // game.load.spritesheet("playbutton","img/PLAYPAUSE.png",100,100);
+    //game.load.spritesheet("pausedButt","img/but1.png",71.5,201);
+
+    //game.load.spritesheet("bg-fish2","img/20.png",37,35);
+}
+
+function create() {
+    game.physics.startSystem(Phaser.Physics.ARCADE);
+
+    game.add.sprite(0,-50,"bground");
+    player = game.add.sprite(300,450,"boat");
+    game.world.setBounds(0,0,5250,0);
+    
+
+    platform = game.add.sprite(0,700,"platform");
+    fish1 = game.add.sprite(0,0,"fish1");
+    bird = game.add.sprite(0,200,"bird");
+    //platform.body.immovable = true;
+    game.physics.arcade.enable(platform);
+    //fish2 = game.add.sprite(800,100,"fish2");
+
+    player.animations.add('turn-right',[0,1,2,3,3,4,5,6,7,8,], 8, true);
+    player.animations.add('turn-left',[9,10,11,12,13,14,15,16], 8,true);
+
+    fish1.animations.add('swim',[0,1,2,3,4,5,], 6, true);
+    bird.animations.add('fly', [0,1,2,3,4,5,6,7,8,9], 5, true);//[0,1,2,3,4][0,1,2,3,4]
+    //fish2.animations.add('swim1',[0,1,2,3,4,5,],6,true);
+
+    //keyboard = game.input.keyboard.createCursorKeys();
+    pause_label = game.add.text(20, 20, 'Pause', { font: '24px Arial', fill: '#fff' });
+    pause_label.inputEnabled = true;
+    pause_label.events.onInputUp.add(function () {
+    //When the pause is pressed, we pause the game
+     game.paused = true;
+         });
+     game.input.onDown.add(unpause, self);
+     function unpause(event){
+        
+     game.paused = false;
+     }
+        
+    //playbuttonplaybutton = game.add.button(550, 20);// 'Pause', { font: '24px Arial', fill: '#fff' });
+    //playbutton.inputEnabled = true;
+    //playbutton.events.onInputUp.add(function () {
+        // When the paus button is pressed, we pause the game
+        //game.paused = true;
+        // });
+    //game.input.onDown.add(unpause, self);
+    //function unpause(event){
+        
+      //  game.paused = false;
+   // }//
+        
+    btnLeft= game.add.button(190,50,"btnLeft", turnleft);
+    btnLeft.scale.x =  -5;
+    btnLeft.scale.y =  8;
+
+    btnRight = game.add.button(200,50,"btnRight", turnright);
+    btnRight.scale.x =  15;
+    btnRight.scale.y = 44;
+
+    //playbutton = game.add.button(330,480,"playbutton",play);
+    //playbutton.scale.x = 1.5;
+    //playbutton.scale.y= 1.0;
+
+    //pausedButt = game.add.button(500,500,"pausedButt", paused);
+   // pausedButt.scale.x = 1.5;
+    //pausedButt.scale.y= 1.0;
+
+    game.physics.arcade.enable(player);
+    game.physics.arcade.enable(fish1);
+    game.physics.arcade.enable(bird);
+
+    //game.physics.arcade.enable(btnLeft);
+    //game.physics.arcade.enable(btnRight);
+    //game.physics.arcade.enable(star);
+    //game.physics.arcade.enable(platform);
+
+    createFish(1000);
+    fish = game.add.group();
+    fish.enableBody = true;
+    game.physics.arcade.enable(fish);
+    //game.world.setBounds(0,0,5250,0);
+
+    createBomb(1400);
+    bomb = game.add.group();
+    bomb.enableBody = true;
+    //game.world.setBounds(0,0,5250,0);
+    game.physics.arcade.enable(bomb);
+
+    createStar(1000);
+    star = game.add.group();
+    star.enableBody = true;
+    //game.world.setBounds(0,0,5250,0);
+   //game.physics.arcade.enable(platform);
+    
+   // platform.scale.x = 2;
+
+    game.physics.arcade.enable(player);
+    player.body.collideWorldBounds = true;
+
+    //game.physics.arcade.enable(fish1);
+	//fish1.body.collideWorldBounds = true;
+    fish1.body.immovable = true;
+    fish1.body.collideWorldBounds = false;
+
+    bird.body.immovable = true;
+    bird.body.collideWorldBounds = true;
+
+
+	//fish1.body.gravity.x = 10;
+    //fish1.body.bounce.x = 0.2;
+	//fish1.body.bounce.y = 1;
+
+    //game.physics.arcade.enable(fish2);
+    //fish2.body.collideWorldBounds = true;
+
+    //fish2.body.gravity.x = 0;
+   
+
+    life = game.add.text(20,50,'Score: 0',{fill:"Black",font:" 30px Impact"});
+    //scoreText = game.add.text(50,150,'Score: 0',{fill:"blue"});
+    bestScoreText = game.add.text(20,90,'Best: '+getScore(),{fill:"grey",font:"30px Impact"});
+    gameOverText = game.add.text  (30,300,'',{fill:"black",font:" 50px Broadway"});
+    tryText = game.add.text(110,350,'',{fill:"grey", font:" 30px ArialBlack"});
+    bestScoreText2 = game.add.text(80,275,'',{fill:"white",font:" 30px Bauhaus93"});
+
+    game.camera.follow(player,Phaser.Camera.FOLLOW_TOPDOWN);
+   //game.camera.follow(player,Phaser.Camera.FOLLOW_TOPDOWN);
+    //game.camera.follow(player,Phaser.Camera.FOLLOW_TOPDOWN);
+    gameOverText.fixedToCamera=true;
+    life.fixedToCamera = true;
+    //bomb.fixedToCamera = true;
+    //pausedButt.fixedToCamera = true;
+    pause_label.fixedToCamera = true;
+    bestScoreText.fixedToCamera = true;
+    bestScoreText2.fixedToCamera = true; 
+    tryText.fixedToCamera = true; 
+    btnLeft.fixedToCamera = true; 
+    btnRight.fixedToCamera = true;
+   // playbutton.fixedToCamera=true;
+}
+
+// var x = 0;
+function update() {
+	
+    //game.physics.arcade.overlap(fishes,platform);
+    //game.physics.arcade.overlap(bombs,platform);
+    //game.physics.arcade.overlap(sfishes,platform);
+    //game.physics.arcade.overlap(player,Cheese,collectCheeses);
+    //game.physics.arcade.overlap(player,poison,collectPoisons);
+    // game.physics.arcade.overlap(player,tom,killertom);
+
+    game.physics.arcade.overlap(player,bombs,kill);
+    game.physics.arcade.overlap(bombs,player,kill);
+    game.physics.arcade.overlap(player,stars,collectStars);
+    game.physics.arcade.overlap(player,fishes,collectFishes);
+
+    game.physics.arcade.overlap(platform, bombs, killBomb);
+    game.physics.arcade.overlap(platform, stars, killStars);
+    game.physics.arcade.overlap(platform, fishes, killFish);
+
+    //for background fishes
+    fish1.animations.play("swim");
+    fish1.body.velocity.x = 74;
+
+    bird.animations.play("fly");
+    bird.body.velocity.x = 50;
+    //fish2.animations.play("swim1");
+    //for keyboard inputs
+
+   //if(keyboard.left.isDown){
+        // x++;
+      // player.animations.play("turn-left");
+      // player.body.velocity.x = -300;
+      //   bg.frame = 0;
+    //}//
+    //else 
+    //    if(keyboard.right.isDown){
+        // x--;
+    //     bg.frame = 1;
+   // player.animations.play("turn-right");
+   //     player.body.velocity.x = 300;
+   //}
+ //else{
+  //     player.body.velocity.x = 0;
+   //  player.animations.stop();
+   //}
+
+}
+
+var a = 0;
+//FOR PLAYER
+function kill(player,bombs){
+    player.kill();
+    bombs.kill();
+
+    explode = game.add.sprite((bombs.position.x-7),(bombs.position.y-7),"explode");
+    explode.animations.add('explosion',[0,1,2,3,4],0,false);
+    explode.animations.play('explosion');
+    setTimeout(function(){
+        explode.animations.stop();
+        explode.scale.x = 0;
+        explode.scale.y = 0;
+        explode.kill();
+    },400)
+
+    if(getScore()<=a){
+       saveScore(a);
+       bestScoreText.text = "Best: "+a;
+   }
+
+    gameOverText.text = "GAME OVER";
+    life.text = "Score: " +a;
+    game._paused = true;
+    bestScoreText2.text = 'BEST SCORE: '+getScore();
+    tryText.text = "Try Again?";
+    tryText.inputEnabled = true;
+    tryText.events.onInputUp.add(function () {
+        // When the paus button is pressed, we pause the game
+       // game.paused = true;
+    game.start = true; 
+         });
+}
+    //tryText = game.add.text(550, 20);// 'Pause', { font: '24px Arial', fill: '#fff' });     
+    //this.game.state.start(" "); 
+
+function collectStars(player, stars){
+    
+    a = a + 5;
+    stars.kill();
+    if(getScore()<=a){
+       saveScore(a);
+       bestScoreText.text = "Best: "+a;
+    }
+
+    life.text = "Score: "+a;
+}
+
+function collectFishes(player, fishes){
+     a = a + 2;
+
+     fishes.kill();
+    if(getScore()<=a){
+       saveScore(a);
+       bestScoreText.text = "Best: "+a;
+    }
+
+    life.text = "Score: "+a;
+}
+
+//FOR PLATFORM
+function killBomb(platform, bombs){
+    bombs.kill();
+
+     explode = game.add.sprite((bombs.position.x-7),(bombs.position.y-7),"explode");
+    explode.animations.add('explosion',[0,1,2,3,4],0,false);
+    explode.animations.play('explosion');
+    setTimeout(function(){
+        explode.animations.stop();
+        explode.scale.x = 0;
+        explode.scale.y = 0;
+        explode.kill();
+    },400)
+}
+function killStars(platform, stars){
+    stars.kill();
+
+     splash = game.add.sprite((stars.position.x-7),(stars.position.y-7),"splash");
+    splash.animations.add('splash',[0,1,2,3,4,5,6,7,8],0,false);
+                                   //[3,4,5]
+                                   //[6,7,8],0,false);
+    splash.animations.play('splash');
+    setTimeout(function(){
+        splash.animations.stop();
+        splash.scale.x = 0;
+        splash.scale.y = 0;
+        splash.kill();
+        },300)
+}
+//function kil2(platform, fishes){
+//    fishes.kill();
+
+//    splash = game.add.sprite((fishes.position.x-7),(fishes.position.y-7),"splash");
+//    splash.animations.add('splash',[0,1,2,3,4,5,6,7,8],0,false);
+                                   //[3,4,5]
+                                   //[6,7,8],0,false);
+//    splash.animations.play('splash');
+ //   setTimeout(function(){
+//        splash.animations.stop();
+//        splash.scale.x = 0;
+//        splash.scale.y = 0;
+ //       splash.kill();
+ //       },300)
+//}
+function killFish(platform, fishes){
+    fishes.kill();
+
+    splash = game.add.sprite((fishes.position.x-7),(fishes.position.y-7),"splash");
+    splash.animations.add('splash',[0,1,2,3,4,5,6,7,8],0,false);
+                                   //[3,4,5]
+                                   //[6,7,8],0,false);
+    splash.animations.play('splash');
+    setTimeout(function(){
+        splash.animations.stop();
+        splash.scale.x = 0;
+        splash.scale.y = 0;
+        splash.kill();
+        },300)
+}
+
+//function createFish(time){
+    //setInterval(function(){
+      //  fishes = fish.create(Math.random()*w,-40,"fish");
+      //  fishes.body.gravity.y = 1100;
+      //  var scale = Math.random();
+
+        //fishes.body.bounce.y = 0.2;
+      //  fishes.body.collideWorldBounds = true;
+  //  },time);
+//}
+function createFish(time){
+    setInterval(function(){
+        fishes = fish.create(Math.random()*w,-37,"fish");
+        fishes.body.gravity.y = 1300;
+        var scale = Math.random();
+
+        //fishes.body.collideWorldBounds = true;
+    },time);
+}
+
+function createBomb(time){
+    setInterval(function(){
+        bombs = bomb.create(Math.random()*w,-60,"bomb");
+        bombs.body.gravity.y = 2000;
+        var scale = Math.random();
+
+        //bombs.body.bounce.y = 0.2;
+        //game.world.setBounds(0,0,5250,0);
+        bombs.body.collideWorldBounds = true;
+    },time);
+}
+
+function createStar(time){
+    setInterval(function(){
+        stars = star.create(Math.random()*w,-87,"star");
+        stars.body.gravity.y = 1500;
+        var scale = Math.random();
+
+        stars.body.collideWorldBounds = true;
+    },time);
+}
+
+function saveScore(Score){
+   localStorage.setItem("gameScore",Score);
+}
+
+function getScore(){
+   return (localStorage.getItem("gameScore") == null || localStorage.getItem("gameScore") == "")?0:localStorage.getItem("gameScore");
+}
+
+function turnleft(){
+   // btnLeft.frame = 0;
+	console.log("Left");
+        //if(player.body.isDown){
+            player.animations.play("turn-left");
+            player.body.velocity.x = -300;
+     //   }
+      //  else{
+     //   player.body.velocity.x = 0;
+     //   player.animations.stop();
+    //}
+}
+function turnright(){
+    //btnRight.frame = 0;
+    console.log("Right");
+     //  if(player.body.isDown){
+        player.animations.play("turn-right");
+        player.body.velocity.x = 300;
+   // }
+    //    else {
+    //    player.body.velocity.x = 0;
+   //     player.animations.stop();
+  //  }
+}
+
+//function paused(){
+// {
+ //   pausedButt.frame = 1
+ //   }  
+//setTimeout(function(){
+    
+//pausedButt.frame = 0;
+//game._paused = false;
+  //  },1000);
+//game._paused = true;
+//}
+//function play(){
+  //{playbutton.frame=1}  
+//setTimeout(function(){
+    
+//playbutton.frame=0;
+//game._paused=false;
+//},5000);
+//game._paused=true;
+//}
+
+</script>
+
+</body>
+</html>
